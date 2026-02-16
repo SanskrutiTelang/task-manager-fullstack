@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager - Simple & Easy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 700px;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            padding: 30px 20px;
+            border-right: 2px solid #dee2e6;
+        }
+
+        .menu-item {
+            padding: 15px;
+            margin: 8px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .menu-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        .main {
+            padding: 40px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #bee5eb;
+        }
+
+        .response {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 2px solid #dee2e6;
+        }
+
+        .response pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .token-display {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            word-break: break-all;
+            margin: 15px 0;
+            border: 1px solid #ffeeba;
+        }
+
+        .task-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .task-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .task-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .task-meta {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-todo { background: #ffc107; color: #000; }
+        .status-in-progress { background: #007bff; color: white; }
+        .status-done { background: #28a745; color: white; }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #6c757d;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Task Manager</h1>
+            <p>Simple & Easy Task Management</p>
+        </div>
+
+        <div class="content">
+            <div class="sidebar">
+                <div class="menu-item active" onclick="showSection('login')">
+                    🔐 Login
+                </div>
+                <div class="menu-item" onclick="showSection('register')">
+                    📝 Register
+                </div>
+                <div class="menu-item" onclick="showSection('create')">
+                    ➕ Create Task
+                </div>
+                <div class="menu-item" onclick="showSection('view')">
+                    📋 View Tasks
+                </div>
+                <div class="menu-item" onclick="showSection('projects')">
+                    📁 Projects
+                </div>
+            </div>
+
+            <div class="main">
+                <div id="message"></div>
+
+                <!-- Login Section -->
+                <div id="login" class="section active">
+                    <h2>🔐 Login</h2>
+                    <div class="info">
+                        <strong>Quick Start:</strong> Login to access your tasks
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="loginEmail" placeholder="your@email.com" value="test@example.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="Your password" value="password123">
+                    </div>
+                    
+                    <button onclick="login()">Login</button>
+                    
+                    <div id="loginToken" class="token-display" style="display:none;">
+                        <strong>✅ Logged In!</strong><br>
+                        Token: <span id="tokenValue"></span>
+                    </div>
+                </div>
+
+                <!-- Register Section -->
+                <div id="register" class="section">
+                    <h2>📝 Register New Account</h2>
+                    
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="regUsername" placeholder="Choose a username">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="regEmail" placeholder="your@email.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="regPassword" placeholder="Choose a password (min 6 characters)">
+                    </div>
+                    
+                    <button onclick="register()">Create Account</button>
+                </div>
+
+                <!-- Create Task Section -->
+                <div id="create" class="section">
+                    <h2>➕ Create New Task</h2>
+                    
+                    <div class="info">
+                        <strong>Note:</strong> You must be logged in to create tasks
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Title *</label>
+                        <input type="text" id="taskTitle" placeholder="Enter task title">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="taskDesc" placeholder="Task description (optional)"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="taskStatus">
+                            <option value="todo">To Do</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="done">Done</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Priority</label>
+                        <select id="taskPriority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="createTask()">Create Task</button>
+                    <button class="btn-secondary" onclick="clearForm()">Clear</button>
+                    
+                    <div id="createResponse" class="response" style="display:none;"></div>
+                </div>
+
+                <!-- View Tasks Section -->
+                <div id="view" class="section">
+                    <h2>📋 Your Tasks</h2>
+                    <button onclick="loadTasks()">🔄 Refresh Tasks</button>
+                    <div id="tasksList" class="loading">Click "Refresh Tasks" to load...</div>
+                </div>
+
+                <!-- Projects Section -->
+                <div id="projects" class="section">
+                    <h2>📁 Projects</h2>
+                    <button onclick="loadProjects()">🔄 Load Projects</button>
+                    <div id="projectsList" class="loading">Click "Load Projects" to see your projects...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let token = '';
+
+        // Show section
+        function showSection(section) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById(section).classList.add('active');
+            event.target.classList.add('active');
+            clearMessage();
+        }
+
+        // Show message
+        function showMessage(message, type = 'info') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = type;
+            messageDiv.innerHTML = message;
+            messageDiv.style.display = 'block';
+            setTimeout(() => messageDiv.style.display = 'none', 5000);
+        }
+
+        function clearMessage() {
+            document.getElementById('message').style.display = 'none';
+        }
+
+        // Register
+        async function register() {
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            if (!username || !email || !password) {
+                showMessage('❌ Please fill in all fields', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage(`✅ Registration successful! Please login.`, 'success');
+                    showSection('login');
+                } else {
+                    showMessage(`❌ ${data.message || 'Registration failed'}`, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Connection error. Is the server running?', 'error');
+            }
+        }
+
+        // Login
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showMessage('❌ Please enter email and password', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.data) {
+                    token = data.data.accessToken;
+                    document.getElementById('loginToken').style.display = 'block';
+                    document.getElementById('tokenValue').textContent = token.substring(0, 50) + '...';
+                    showMessage(`✅ Welcome back! You can now create tasks.`, 'success');
+                } else {
+                    showMessage(`❌ ${data.message || 'Login failed'}`, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Connection error. Is the server running?', 'error');
+            }
+        }
+
+        // Create Task
+        async function createTask() {
+            if (!token) {
+                showMessage('❌ Please login first!', 'error');
+                showSection('login');
+                return;
+            }
+
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDesc').value;
+            const status = document.getElementById('taskStatus').value;
+            const priority = document.getElementById('taskPriority').value;
+
+            if (!title) {
+                showMessage('❌ Title is required', 'error');
+                return;
+            }
+
+            // Don't include project field at all if not needed
+            const taskData = {
+                title: title,
+                description: description,
+                status: status,
+                priority: priority
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/tasks`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(taskData)
+                });
+
+                const data = await response.json();
+                
+                const responseDiv = document.getElementById('createResponse');
+                responseDiv.style.display = 'block';
+                
+                if (response.ok) {
+                    showMessage('✅ Task created successfully!', 'success');
+                    responseDiv.innerHTML = `<strong>✅ Success!</strong><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    clearForm();
+                    
+                    // Don't switch sections automatically - let user stay on create page
+                    // If they want to see tasks, they can click View Tasks
+                } else {
+                    showMessage(`❌ ${data.message || 'Failed to create task'}`, 'error');
+                    responseDiv.innerHTML = `<strong>❌ Error:</strong><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                console.error('Create task error:', error);
+                showMessage('❌ Connection error', 'error');
+            }
+        }
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDesc').value = '';
+            document.getElementById('taskStatus').value = 'todo';
+            document.getElementById('taskPriority').value = 'medium';
+        }
+
+        // Load Tasks
+        async function loadTasks() {
+            if (!token) {
+                showMessage('❌ Please login first!', 'error');
+                showSection('login');
+                return;
+            }
+
+            const tasksDiv = document.getElementById('tasksList');
+            tasksDiv.innerHTML = '<div class="loading">⏳ Loading tasks...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/tasks`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                console.log('Tasks response:', data); // Debug log
+                
+                if (response.ok && data.success) {
+                    // Handle the response format: data.data.tasks
+                    const tasks = data.data.tasks || data.data || [];
+                    
+                    if (tasks.length === 0) {
+                        tasksDiv.innerHTML = `
+                            <div class="empty-state">
+                                <h3>No tasks yet!</h3>
+                                <p>Create your first task to get started.</p>
+                            </div>
+                        `;
+                        showMessage('📋 No tasks found. Create your first task!', 'info');
+                    } else {
+                        tasksDiv.innerHTML = tasks.map(task => `
+                            <div class="task-card">
+                                <div class="task-title">
+                                    ${task.title}
+                                    <span class="status-badge status-${task.status}">${task.status.toUpperCase()}</span>
+                                </div>
+                                <div>${task.description || 'No description'}</div>
+                                <div class="task-meta">
+                                    Priority: ${task.priority || 'medium'} | 
+                                    Created: ${new Date(task.createdAt).toLocaleDateString()}
+                                </div>
+                            </div>
+                        `).join('');
+                        showMessage(`✅ Loaded ${tasks.length} task${tasks.length > 1 ? 's' : ''}`, 'success');
+                    }
+                } else {
+                    console.error('Tasks API error:', data);
+                    tasksDiv.innerHTML = `<div class="error">❌ Failed to load tasks: ${data.message || 'Unknown error'}</div>`;
+                    showMessage(`❌ ${data.message || 'Failed to load tasks'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Load tasks error:', error);
+                tasksDiv.innerHTML = `<div class="error">❌ Connection error. Is the server running?</div>`;
+                showMessage('❌ Connection error. Check if server is running.', 'error');
+            }
+        }
+
+        // Load Projects
+        async function loadProjects() {
+            if (!token) {
+                showMessage('❌ Please login first!', 'error');
+                showSection('login');
+                return;
+            }
+
+            const projectsDiv = document.getElementById('projectsList');
+            projectsDiv.innerHTML = '<div class="loading">⏳ Loading projects...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/projects`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.data) {
+                    if (data.data.length === 0) {
+                        projectsDiv.innerHTML = `
+                            <div class="empty-state">
+                                <h3>No projects yet!</h3>
+                                <p>Projects help you organize tasks.</p>
+                            </div>
+                        `;
+                    } else {
+                        projectsDiv.innerHTML = data.data.map(project => `
+                            <div class="task-card">
+                                <div class="task-title">📁 ${project.name}</div>
+                                <div>${project.description || 'No description'}</div>
+                                <div class="task-meta">
+                                    Created: ${new Date(project.createdAt).toLocaleDateString()}
+                                </div>
+                            </div>
+                        `).join('');
+                        showMessage(`✅ Loaded ${data.data.length} projects`, 'success');
+                    }
+                } else {
+                    projectsDiv.innerHTML = `<div class="error">❌ Failed to load projects</div>`;
+                }
+            } catch (error) {
+                projectsDiv.innerHTML = `<div class="error">❌ Connection error</div>`;
+            }
+        }
+
+        // Check server on load
+        window.addEventListener('load', async () => {
+            try {
+                await fetch(`${API_BASE}/auth/login`, { method: 'OPTIONS' });
+                console.log('✅ Server is reachable');
+            } catch (error) {
+                showMessage('⚠️ Warning: Cannot connect to server. Make sure it\'s running on http://localhost:5000', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
